@@ -1,0 +1,11 @@
+# Virtual environment
+venv/
+
+# OCR / binaries
+enabledocr/
+
+# Test PDFs
+*.pdf
+
+# Python cache
+__pycache__/
