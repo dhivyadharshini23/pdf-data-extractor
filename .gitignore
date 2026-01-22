@@ -1,11 +1,13 @@
-# Virtual environment
+# virtual environment
 venv/
+__pycache__/
+*.pyc
 
-# OCR / binaries
+# PDFs used for testing
+sample.pdf
+sampleocr.pdf
 enabledocr/
 
-# Test PDFs
-*.pdf
-
-# Python cache
-__pycache__/
+# OS junk
+.DS_Store
+Thumbs.db
