@@ -1,94 +1,94 @@
-import fitz  # PyMuPDF
 import re
+import os
+from PyPDF2 import PdfReader
+from docx import Document
 
+# ---------- Text Readers ----------
 
-def extract_text_from_pdf(pdf_path):
-    doc = fitz.open(pdf_path)
+def read_pdf(path):
+    reader = PdfReader(path)
     text = ""
-
-    for page in doc:
-        page_text = page.get_text()
-        if page_text:
-            text += page_text + "\n"
-
+    for page in reader.pages:
+        text += page.extract_text() or ""
     return text
 
 
-def extract_school_percentages(text):
-    result = {}
-    lines = text.split("\n")
+def read_docx(path):
+    doc = Document(path)
+    return "\n".join(p.text for p in doc.paragraphs)
 
+
+def read_txt(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
+
+
+# ---------- Key Info Extraction ----------
+def extract_key_info(text):
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    extracted = {
+        "email": None,
+        "phone": None,
+        "gstin": None,
+        "invoice_no": None,
+        "date": None,
+        "total_amount": None
+    }
+
+    # Global regex (works anywhere)
+    extracted["email"] = re.search(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", text)
+    extracted["phone"] = re.search(r"\b[6-9]\d{9}\b", text)
+    extracted["gstin"] = re.search(r"\b\d{2}[A-Z]{5}\d{4}[A-Z][A-Z\d]Z[A-Z\d]\b", text)
+
+    extracted["email"] = extracted["email"].group() if extracted["email"] else None
+    extracted["phone"] = extracted["phone"].group() if extracted["phone"] else None
+    extracted["gstin"] = extracted["gstin"].group() if extracted["gstin"] else None
+
+    # Line-by-line smart extraction
     for line in lines:
-        lower_line = line.lower()
-        match = re.search(r"\b(\d{2,3})\s*%", line)
+        lower = line.lower()
 
-        if match:
-            percent = match.group(1)
+        if "invoice" in lower and "no" in lower:
+            extracted["invoice_no"] = line.split()[-1]
 
-            if "10th" in lower_line or "sslc" in lower_line or "secondary" in lower_line:
-                result["10th_percentage"] = percent
+        elif "date" in lower:
+            m = re.search(r"\d{2}[/-]\d{2}[/-]\d{4}", line)
+            if m:
+                extracted["date"] = m.group()
 
-            elif "12th" in lower_line or "hsc" in lower_line or "higher secondary" in lower_line:
-                result["12th_percentage"] = percent
+        elif "total" in lower:
+            m = re.search(r"₹?\s*([\d,]+\.\d{2})", line)
+            if m:
+                extracted["total_amount"] = m.group(1)
 
-    return result
+    return extracted
 
 
-def extract_details(text):
-    details = {}
 
-    
-    email_pattern = r"[a-zA-Z0-9._%+-]+@[a-zA-Z.-]+\.[a-z]{2,}"
-    phone_pattern = r"\b[6-9]\d{9}\b"
+# ---------- File Router ----------
 
-    details["emails"] = list(set(re.findall(email_pattern, text)))
-    details["phones"] = list(set(re.findall(phone_pattern, text)))
+def extract_from_file(file_path):
+    ext = os.path.splitext(file_path)[1].lower()
 
-    
-    lines = text.split("\n")
-    for line in lines[:5]:
-        if line.strip().istitle() and len(line.split()) <= 3:
-            details["name"] = line.strip()
-            break
+    if ext == ".pdf":
+        text = read_pdf(file_path)
+    elif ext == ".docx":
+        text = read_docx(file_path)
+    elif ext == ".txt":
+        text = read_txt(file_path)
+    else:
+        raise ValueError("Unsupported file format")
 
-    
-    cgpa_match = re.search(r"\bCGPA[:\s]*([0-9]\.\d{1,2})", text, re.IGNORECASE)
-    if cgpa_match:
-        details["cgpa"] = cgpa_match.group(1)
+    return extract_key_info(text)
 
-    
-    for line in lines:
-        if "college" in line.lower() or "engineering" in line.lower():
-            details["college"] = line.strip()
-            break
 
-    
-    skill_keywords = [
-        "python", "c", "c++", "java", "sql", "git",
-        "machine learning", "iot", "arduino",
-        "html", "css", "javascript"
-    ]
 
-    found_skills = set()
-    lower_text = text.lower()
-
-    for skill in skill_keywords:
-        if skill in lower_text:
-            found_skills.add(skill)
-
-    details["skills"] = list(found_skills)
-
-   
-    school_percentages = extract_school_percentages(text)
-    details.update(school_percentages)
-
-    return details
+# ---------- Main ----------
 
 if __name__ == "__main__":
-    pdf_path = "sample.pdf"   
-    text = extract_text_from_pdf(pdf_path)
-    details = extract_details(text)
+    file_path = "sample_invoice.docx"  
+    result = extract_from_file(file_path)
 
-    print("\nExtracted Details:")
-    for key, value in details.items():
-        print(f"{key}: {value}")
+    print("Extracted Information:")
+    for k, v in result.items():
+        print(f"{k.upper():12}: {v}")
