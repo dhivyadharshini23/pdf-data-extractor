@@ -3,7 +3,7 @@ import os
 from PyPDF2 import PdfReader
 from docx import Document
 
-# ---------- Text Readers ----------
+
 
 def read_pdf(path):
     reader = PdfReader(path)
@@ -22,8 +22,6 @@ def read_txt(path):
     with open(path, "r", encoding="utf-8") as f:
         return f.read()
 
-
-# ---------- Key Info Extraction ----------
 def extract_key_info(text):
     lines = [l.strip() for l in text.splitlines() if l.strip()]
     extracted = {
@@ -35,7 +33,7 @@ def extract_key_info(text):
         "total_amount": None
     }
 
-    # Global regex (works anywhere)
+   
     extracted["email"] = re.search(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", text)
     extracted["phone"] = re.search(r"\b[6-9]\d{9}\b", text)
     extracted["gstin"] = re.search(r"\b\d{2}[A-Z]{5}\d{4}[A-Z][A-Z\d]Z[A-Z\d]\b", text)
@@ -44,7 +42,7 @@ def extract_key_info(text):
     extracted["phone"] = extracted["phone"].group() if extracted["phone"] else None
     extracted["gstin"] = extracted["gstin"].group() if extracted["gstin"] else None
 
-    # Line-by-line smart extraction
+   
     for line in lines:
         lower = line.lower()
 
@@ -65,7 +63,6 @@ def extract_key_info(text):
 
 
 
-# ---------- File Router ----------
 
 def extract_from_file(file_path):
     ext = os.path.splitext(file_path)[1].lower()
@@ -83,7 +80,6 @@ def extract_from_file(file_path):
 
 
 
-# ---------- Main ----------
 
 if __name__ == "__main__":
     file_path = "sample_invoice.docx"  
