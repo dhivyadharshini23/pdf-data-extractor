@@ -9,10 +9,6 @@ from pdf2image import convert_from_path
 # Update path if needed
 pytesseract.pytesseract.tesseract_cmd = r"G:\dd\pdf-data-extractor\TESSERACT\tesseract.exe"
 
-<<<<<<< HEAD:backend/extractor.py
-=======
-
->>>>>>> d339dc01725fb0f0849080ea110e30b4c5dc265b:extractor.py
 
 def read_pdf(path):
     reader = PdfReader(path)
@@ -51,10 +47,7 @@ def read_txt(path):
     with open(path, "r", encoding="utf-8") as f:
         return f.read()
 
-<<<<<<< HEAD:backend/extractor.py
 
-=======
->>>>>>> d339dc01725fb0f0849080ea110e30b4c5dc265b:extractor.py
 def extract_key_info(text):
     extracted = {
         "email": None,
@@ -65,10 +58,6 @@ def extract_key_info(text):
         "total_amount": None
     }
 
-<<<<<<< HEAD:backend/extractor.py
-=======
-   
->>>>>>> d339dc01725fb0f0849080ea110e30b4c5dc265b:extractor.py
     extracted["email"] = re.search(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", text)
     extracted["phone"] = re.search(r"\b[6-9]\d{9}\b", text)
     extracted["gstin"] = re.search(r"\b\d{2}[A-Z]{5}\d{4}[A-Z][A-Z\d]Z[A-Z\d]\b", text)
@@ -76,12 +65,7 @@ def extract_key_info(text):
     for k in ["email", "phone", "gstin"]:
         extracted[k] = extracted[k].group() if extracted[k] else None
 
-<<<<<<< HEAD:backend/extractor.py
     for line in text.splitlines():
-=======
-   
-    for line in lines:
->>>>>>> d339dc01725fb0f0849080ea110e30b4c5dc265b:extractor.py
         lower = line.lower()
 
         if "invoice" in lower and "no" in lower:
@@ -100,11 +84,6 @@ def extract_key_info(text):
     return extracted
 
 
-<<<<<<< HEAD:backend/extractor.py
-=======
-
-
->>>>>>> d339dc01725fb0f0849080ea110e30b4c5dc265b:extractor.py
 def extract_from_file(file_path):
     ext = os.path.splitext(file_path)[1].lower()
 
@@ -120,17 +99,3 @@ def extract_from_file(file_path):
         raise ValueError("Unsupported file type")
 
     return extract_key_info(text)
-<<<<<<< HEAD:backend/extractor.py
-=======
-
-
-
-
-if __name__ == "__main__":
-    file_path = "sample_invoice.docx"  
-    result = extract_from_file(file_path)
-
-    print("Extracted Information:")
-    for k, v in result.items():
-        print(f"{k.upper():12}: {v}")
->>>>>>> d339dc01725fb0f0849080ea110e30b4c5dc265b:extractor.py
