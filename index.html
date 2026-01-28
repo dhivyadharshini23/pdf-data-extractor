@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document Upload</title>
+
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 12px;
+            width: 400px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        input[type="file"] {
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #5a67d8;
+        }
+
+        h3 {
+            margin-top: 25px;
+            color: #444;
+        }
+
+        form {
+            text-align: left;
+            margin-top: 15px;
+        }
+
+        form input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 12px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        label {
+            font-size: 13px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📄 Document Upload</h2>
+
+    <input type="file" id="fileInput" />
+    <br>
+    <button onclick="upload()">Upload</button>
+
+    <h3>Extracted Data</h3>
+
+    <form>
+        <label>Email</label>
+        <input id="email">
+
+        <label>Phone</label>
+        <input id="phone">
+
+        <label>GSTIN</label>
+        <input id="gstin">
+
+        <label>Invoice No</label>
+        <input id="invoice_no">
+
+        <label>Date</label>
+        <input id="date">
+
+        <label>Total Amount</label>
+        <input id="total_amount">
+    </form>
+</div>
+
+<script>
+function upload() {
+    const file = document.getElementById("fileInput").files[0];
+    if (!file) {
+        alert("Please select a file");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    fetch("http://127.0.0.1:5000/upload", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        for (let key in data) {
+            const el = document.getElementById(key);
+            if (el) el.value = data[key] || "";
+        }
+    })
+    .catch(err => alert("Upload failed"));
+}
+</script>
+
+</body>
+</html>
